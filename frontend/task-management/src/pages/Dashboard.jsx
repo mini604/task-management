@@ -1,19 +1,30 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Button, Container, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, role, logout, isAuthenticated } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/"); //  redirect after logout
+  };
+
+  //  Protect route: redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <Container sx={{ mt: 10 }}>
       <Typography variant="h3" mb={2}>
-        Welcome, {user?.name}
+        Welcome, {user?.name} ({role})
       </Typography>
-      <Typography variant="h6" mb={4}>
-        Role: {user?.role}
-      </Typography>
-      <Button variant="contained" color="error" onClick={logout}>
+      <Button variant="contained" color="error" onClick={handleLogout}>
         Logout
       </Button>
     </Container>

@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect } from "react";
-import { 
+import {
   TextField, Button, Container, Typography, Box, Alert,
-  InputAdornment, IconButton, Fade, Zoom, Card, Divider
+  InputAdornment, IconButton, Card, CircularProgress
 } from "@mui/material";
-import { 
-  Visibility, VisibilityOff, Email, 
-  Login as LoginIcon, PersonAdd 
+import {
+  Visibility, VisibilityOff, Email,
+  Lock, Login as LoginIcon, PersonAdd
 } from "@mui/icons-material";
 import { AuthContext } from "../../context/AuthContext";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { loginUser } from "../../api/apiAuth"; // ✅ use common API
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -44,38 +44,28 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
-    // Basic validation
+
     if (!email || !password) {
       setError("Please fill in all fields");
       return;
     }
-    
+
     if (emailError) {
       setError("Please enter a valid email address");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      login(res.data);
+      const data = await loginUser(email, password); // ✅ API call
+      login(data); // store in context
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleDemoLogin = (role) => {
-    setEmail(`${role}@demo.com`);
-    setPassword("password123");
   };
 
   return (
@@ -90,35 +80,34 @@ const Login = () => {
             mt: 10,
             p: 4,
             borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-            background: "linear-gradient(to bottom, #ffffff, #f8f9fa)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+            background: "linear-gradient(135deg, #ffffff, #f9fafb)",
           }}
         >
+          {/* Header */}
           <Box display="flex" justifyContent="center" mb={2}>
             <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
+              animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
               <LoginIcon color="primary" sx={{ fontSize: 48 }} />
             </motion.div>
           </Box>
-          
-          <Typography variant="h4" align="center" mb={2} fontWeight="bold" color="primary">
+
+          <Typography variant="h4" align="center" fontWeight="bold" color="primary" gutterBottom>
             Welcome Back
           </Typography>
-          
           <Typography variant="body2" align="center" color="text.secondary" mb={3}>
             Sign in to continue to your account
           </Typography>
-          
+
           {error && (
-            <Zoom in={true}>
-              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-                {error}
-              </Alert>
-            </Zoom>
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+              {error}
+            </Alert>
           )}
-          
+
+          {/* Form */}
           <form onSubmit={handleSubmit}>
             <TextField
               label="Email"
@@ -137,14 +126,9 @@ const Login = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  transition: 'all 0.3s ease',
-                }
-              }}
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
             />
-            
+
             <TextField
               label="Password"
               type={showPassword ? "text" : "password"}
@@ -158,99 +142,60 @@ const Login = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <IconButton edge="start" disabled>
-                      <LoginIcon color="action" />
-                    </IconButton>
+                    <Lock color="action" />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  transition: 'all 0.3s ease',
-                }
-              }}
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
             />
-            
+
             <Typography variant="body2" align="right" mt={1} mb={2}>
-              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2' }}>
+              <Link to="/forgot-password" style={{ textDecoration: "none", color: "#1976d2" }}>
                 Forgot password?
               </Link>
             </Typography>
-            
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-              <Button 
-                type="submit" 
-                variant="contained" 
-                color="primary" 
-                fullWidth 
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
                 size="large"
                 disabled={isLoading || emailError || passwordError}
-                sx={{ 
-                  mt: 1, 
+                sx={{
+                  mt: 1,
                   py: 1.5,
                   borderRadius: 2,
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.1)',
-                  background: isLoading ? 'rgba(25, 118, 210, 0.7)' : '',
-                  transition: 'all 0.3s ease'
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
                 }}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Sign In"}
               </Button>
             </motion.div>
           </form>
-          
-          <Divider sx={{ my: 3 }}>
+
+          {/* Signup Redirect */}
+          <Box textAlign="center" mt={3}>
             <Typography variant="body2" color="text.secondary">
-              Demo Accounts
-            </Typography>
-          </Divider>
-          
-          <Box display="flex" gap={2} mb={3}>
-            <Button 
-              variant="outlined" 
-              fullWidth 
-              size="small"
-              onClick={() => handleDemoLogin("user")}
-              sx={{ borderRadius: 2 }}
-            >
-              User Demo
-            </Button>
-            <Button 
-              variant="outlined" 
-              fullWidth 
-              size="small"
-              onClick={() => handleDemoLogin("admin")}
-              sx={{ borderRadius: 2 }}
-            >
-              Admin Demo
-            </Button>
-          </Box>
-          
-          <Box textAlign="center" mt={2}>
-            <Typography variant="body2" color="text.secondary">
-              Don't have an account?{' '}
-              <Link 
-                to="/signup" 
-                style={{ 
-                  textDecoration: 'none', 
-                  color: '#1976d2',
-                  fontWeight: 'bold',
-                  display: 'inline-flex',
-                  alignItems: 'center'
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                style={{
+                  textDecoration: "none",
+                  color: "#1976d2",
+                  fontWeight: "bold",
+                  display: "inline-flex",
+                  alignItems: "center",
                 }}
               >
                 Sign up <PersonAdd sx={{ fontSize: 16, ml: 0.5 }} />
