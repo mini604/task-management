@@ -1,11 +1,18 @@
-import express from 'express';
-import { createProject, getProjects } from '../controllers/projectController';
-import { protect } from '../middleware/authMiddleware';
-import { authorizeRoles } from '../middleware/roleMiddleware';
+const express = require("express");
+const { createProject, getProjects, deleteProject } = require("../controllers/projectController");
+const { protect } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
+// Only managers can create projects
 router.post("/", protect, authorizeRoles("manager"), createProject);
-router.get("/",protect,authorizeRoles("manager"),getProjects);
 
-export default router;
+// Only managers can view the projects they created
+router.get("/", protect, authorizeRoles("manager"), getProjects);
+
+router.delete("/:id", protect, authorizeRoles("manager", "admin"), deleteProject);
+
+
+
+module.exports = router;

@@ -3,8 +3,9 @@ const Project = require("../models/Project");
 
 // Create a new task
 const createTask = async (req, res) => {
-  try {
-    const { title, description, priority, dueDate, assignedTo, projectId } = req.body;
+  console.log(req)
+ // try {
+    const { title, description,status, priority, dueDate, assignedTo, projectId } = req.body;
 
     // Check if project exists
     const project = await Project.findById(projectId);
@@ -15,6 +16,7 @@ const createTask = async (req, res) => {
     const task = await Task.create({
       title,
       description,
+      status,
       priority,
       dueDate,
       assignedTo,
@@ -23,9 +25,9 @@ const createTask = async (req, res) => {
     });
 
     res.status(201).json({ success: true, task });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
+  //} catch (err) {
+    //res.status(500).json({ message: "Server error", error: err.message });
+  //}
 };
 
 // Update task status
