@@ -16,7 +16,7 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("employee"); // default role
+  const [role, setRole] = useState(""); // 🔹 default empty
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -24,6 +24,11 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!role) {
+      setError("Please select a role");
+      return;
+    }
 
     try {
       const res = await apiClient.post("/auth/signup", {
@@ -33,7 +38,6 @@ const Signup = () => {
         role,
       });
 
-      // Backend should return { token, user: { name, email, role } }
       login(res.data);
       navigate("/dashboard");
     } catch (err) {
@@ -42,88 +46,118 @@ const Signup = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          mt: 10,
-          p: 4,
-          borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-          background: "linear-gradient(to bottom, #fff, #f8f9fa)",
-        }}
-      >
-        <Typography variant="h4" align="center" mb={3} fontWeight="bold" color="primary">
-          Create an Account
-        </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Full Name"
-            fullWidth
-            required
-            margin="normal"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <TextField
-            label="Email"
-            type="email"
-            fullWidth
-            required
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            required
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          {/* ✅ Role Dropdown */}
-          <TextField
-            select
-            label="Role"
-            fullWidth
-            required
-            margin="normal"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="manager">Manager</MenuItem>
-            <MenuItem value="employee">Employee</MenuItem>
-          </TextField>
-
-          <Button
-            type="submit"
-            variant="contained"
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "#f4f6f8",
+        p: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Box
+          sx={{
+            width: "450px", // 🔹 width thoda bada
+            p: 3, // 🔹 padding thoda kam
+            borderRadius: 3,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+            background: "#fff",
+          }}
+        >
+          <Typography
+            variant="h4"
+            align="center"
+            mb={2}
+            fontWeight="bold"
             color="primary"
-            fullWidth
-            sx={{ mt: 3, py: 1.5, fontWeight: "bold", borderRadius: 2 }}
           >
             Sign Up
-          </Button>
-        </form>
+          </Typography>
 
-        <Typography mt={3} align="center" color="text.secondary">
-          Already have an account?{" "}
-          <a href="/" style={{ textDecoration: "none", color: "#1976d2", fontWeight: "bold" }}>
-            Login
-          </a>
-        </Typography>
-      </Box>
-    </Container>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Full Name"
+              fullWidth
+              required
+              margin="normal"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              label="Email"
+              type="email"
+              fullWidth
+              required
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+              required
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {/* 🔹 Role Dropdown with default "Select Role" */}
+            <TextField
+              select
+              label="Role"
+              fullWidth
+              required
+              margin="normal"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <MenuItem value="">Select Role</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
+              <MenuItem value="employee">Employee</MenuItem>
+            </TextField>
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{
+                mt: 3,
+                py: 1.2,
+                fontWeight: "bold",
+                borderRadius: 2,
+              }}
+            >
+              Sign Up
+            </Button>
+          </form>
+
+          <Typography mt={3} align="center" color="text.secondary">
+            Already have an account?{" "}
+            <a
+              href="/"
+              style={{
+                textDecoration: "none",
+                color: "#1976d2",
+                fontWeight: "bold",
+              }}
+            >
+              Login
+            </a>
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

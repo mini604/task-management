@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const Organisation = require("../models/Organisation")
 
 // Generate JWT token
 const generateToken = (id, role) => {
@@ -34,35 +35,43 @@ const signup = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+    const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-// Login
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ email }).select("+password");
-        if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-
-        const isMatch = await user.matchPassword(password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-
-        res.json({
-            message: "Login successful",
-            user: {
-                id: user._id,   // fixed
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-            token: generateToken(user._id, user.role),
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    // Check organisation existence
+    const organisation = await Organisation.findOne({ createdBy: user._id });
+
+    // Prepare token once
+    const token = generateToken(user._id, user.role);
+
+    // Final response (only one)
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      showSubscription: !organisation,   // true if no org
+      organisation: organisation || null // send org if exists
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = { signup, login };

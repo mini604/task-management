@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const organisationSchema = new mongoose.Schema(
     {
         name:{
@@ -15,12 +16,13 @@ const organisationSchema = new mongoose.Schema(
             ref:"User",
             required:true,
         },
-        members:[
+        members: [
             {
-                type:mongoose.Schema.Types.ObjectId,
-                ref:"User",
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Member", 
             },
         ],
+        
     },
     {timestamps:true}
 );

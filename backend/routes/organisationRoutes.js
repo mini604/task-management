@@ -1,11 +1,22 @@
 const express = require("express")
 const router = express.Router();
-const {createOrganisation, getOrganisations, deleteOrganisation} = require("../controllers/organisationController")
-const { protect, authorizeRoles} = require("../middleware/authMiddleware");
 
+const {createOrganisation, 
+    getOrganisations, 
+    deleteOrganisation, 
+    inviteMember,
+    updateMemberStatus
+ } = require("../controllers/organisationController")
 
-router.post("/",protect, authorizeRoles("admin"), createOrganisation);
-router.get("/",protect, authorizeRoles("admin"), getOrganisations);
-router.get("/:id",protect, authorizeRoles("admin"), deleteOrganisation)
+const { protect} = require("../middleware/authMiddleware");
+const { authorizeRoles} = require("../middleware/roleMiddleware")
+
+router.use(protect);
+
+router.post("/", authorizeRoles("admin"), createOrganisation);
+router.get("/", authorizeRoles("admin"), getOrganisations);
+router.get("/:id", authorizeRoles("admin"), deleteOrganisation);
+router.post("/:orgId/members/invite", authorizeRoles("admin","manager"), inviteMember);
+router.put("/:orgId/members/:memberId/status", authorizeRoles("admin","manager"), updateMemberStatus )
 
 module.exports = router
