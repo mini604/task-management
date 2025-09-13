@@ -13,8 +13,8 @@ const { authorizeRoles} = require("../middleware/roleMiddleware")
 
 router.use(protect);
 
-router.post("/", authorizeRoles("admin"), createOrganisation);
-router.get("/", authorizeRoles("admin"), getOrganisations);
+router.post("/",authorizeRoles("admin","manager"),  createOrganisation);
+router.get("/", getOrganisations);
 router.get("/:id", authorizeRoles("admin"), deleteOrganisation);
 router.post("/:orgId/members/invite", authorizeRoles("admin","manager"), inviteMember);
 router.put("/:orgId/members/:memberId/status", authorizeRoles("admin","manager"), updateMemberStatus )
